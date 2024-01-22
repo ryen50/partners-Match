@@ -14,4 +14,9 @@ public class UserContext {
       */
      public static final int IS_ADMIN=1;
      public static final int NOT_IS_ADMIN=0;
+     /**
+      * 成功
+      */
+     public static final int SUCCESS=1;
+     public static final int FAILURE=0;
 }

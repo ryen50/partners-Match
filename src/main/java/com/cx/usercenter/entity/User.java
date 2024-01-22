@@ -70,6 +70,12 @@ public class User implements Serializable {
     private Date updateTime;
 
     /**
+     * 标签
+     */
+    private String tags;
+
+
+    /**
      * 是否删除 1表示已删除，0表示未删除
      */
     @TableLogic

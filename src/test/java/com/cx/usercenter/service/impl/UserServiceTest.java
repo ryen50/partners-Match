@@ -1,11 +1,15 @@
 package com.cx.usercenter.service.impl;
 
+import com.cx.usercenter.entity.User;
 import com.cx.usercenter.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -42,5 +46,12 @@ public class UserServiceTest {
 //        Assertions.assertTrue(result>0);
 
 
+    }
+    @Test
+    public void test2()
+    {
+        List<String> list = Arrays.asList("java", "python");
+        List<User> userByTags = userService.getUserByTags(list);
+        Assertions.assertTrue(userByTags.size()>0);
     }
 }
