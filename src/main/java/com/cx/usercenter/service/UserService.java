@@ -1,6 +1,7 @@
 package com.cx.usercenter.service;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cx.usercenter.entity.User;
 
@@ -67,5 +68,18 @@ public interface UserService extends IService<User> {
      * @param tagNames
      * @return
      */
-    List<User> getUserByTags(List<String> tagNames);
+    List<User> getTagsBySQL(List<String> tagNames);
+
+    /**
+     * 更新用户信息
+     * @param loginUser 当前登录用户信息
+     * @param user 修改后的用户信息
+     */
+    void update(User loginUser, User user);
+
+    /**
+     * 输出所有用户
+     * @return
+     */
+    Page<User> recommend();
 }

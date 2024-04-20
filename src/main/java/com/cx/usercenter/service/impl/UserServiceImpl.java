@@ -1,6 +1,7 @@
 package com.cx.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cx.usercenter.common.ErrorCode;
 import com.cx.usercenter.context.UserContext;
@@ -160,7 +161,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setRole(user.getRole());
         safetyUser.setPhone(user.getPhone());
         safetyUser.setEmail(user.getEmail());
-        safetyUser.setEmail(user.getTags());
+        safetyUser.setPlanetCode(user.getPlanetCode());
+        safetyUser.setProfile(user.getProfile());
+        safetyUser.setTags(user.getTags());
         return safetyUser;
     }
 
@@ -228,12 +231,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 根据id来查询用户
+     * 根据id来查询用户通过sql
      * @param tagNames 标签名
      * @return
      */
     @Override
-    public List<User> getUserByTags(List<String> tagNames) {
+    public List<User> getTagsBySQL(List<String> tagNames) {
         //先对形参列表检查非空
         if (CollectionUtils.isEmpty(tagNames))
             throw  new BusinessException(ErrorCode.NULL_ERROR);
@@ -245,31 +248,67 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         List<User> userList = userMapper.selectList(wrapper);
 
-//        //先对形参列表检查非空
-//        if (CollectionUtils.isEmpty(tagNames))
-//            throw  new BusinessException(ErrorCode.NULL_ERROR);
 //
-//        Gson gson = new Gson();
-//        //查询所有用户的标签
-//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-//        List<User> userList = userMapper.selectList(queryWrapper);
-//        //在内存中将标签从json改为集合并查询是否全部包含参数中的标签
-//        return userList.stream().filter(user -> {
-//                    if (StringUtils.isBlank(user.getTags()))
-//                        return false;
-//                    Set<String> userTagsSet=gson.fromJson(user.getTags(),new TypeToken<Set<String>>(){}.getType());
-//                    for (String tagName : tagNames) {
-//                        if (!userTagsSet.contains(tagName))
-//                            return false;
-//                    }
-//                    return true;
-//                }
-//        ).map(UserServiceImpl::userTOSafety).collect(Collectors.toList());
-
         return  userList.stream().map(UserServiceImpl::userTOSafety).collect(Collectors.toList());
     }
 
+    @Override
+    public void update(User loginUser, User user) {
+        if (user.getId()<=0)
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用戶的id非法");
 
+        if(!isAdmin(loginUser)&&loginUser.getId()!=user.getId())
+            throw new BusinessException(ErrorCode.NO_AUTH);
+
+        User oldUser = this.getById(user.getId());
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+
+         userMapper.updateById(user);
+
+
+    }
+
+    /**
+     * 将所有数据输出
+     * @return
+     */
+    @Override
+    public Page<User> recommend() {
+
+        return userMapper.selectPage(new Page<>(1,10),new QueryWrapper<>());
+
+    }
+
+    /**
+     * 通过内存处理来获取标签
+     * @param tagNames
+     * @return
+     */
+    @Deprecated
+    public List<User> getTagsByMemory(List<String> tagNames) {
+        //先对形参列表检查非空
+        if (CollectionUtils.isEmpty(tagNames))
+            throw  new BusinessException(ErrorCode.NULL_ERROR);
+
+        Gson gson = new Gson();
+        //查询所有用户的标签
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        //在内存中将标签从json改为集合并查询是否全部包含参数中的标签
+        return userList.stream().filter(user -> {
+                    if (StringUtils.isBlank(user.getTags()))
+                        return false;
+                    Set<String> userTagsSet=gson.fromJson(user.getTags(),new TypeToken<Set<String>>(){}.getType());
+                    for (String tagName : tagNames) {
+                        if (!userTagsSet.contains(tagName))
+                            return false;
+                    }
+                    return true;
+                }
+        ).map(UserServiceImpl::userTOSafety).collect(Collectors.toList());
+    }
     /**
      * 判断访问者权限
      * @param request 请求
@@ -279,6 +318,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Object attribute = request.getSession().getAttribute(UserContext.USER_LOGIN_STATE);
         User user = (User) attribute;
         return user.getRole()==UserContext.IS_ADMIN;
+    }
+
+    private boolean isAdmin(User user)
+    {
+        return user.getRole() == 1;
     }
 }
 

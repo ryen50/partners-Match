@@ -11,7 +11,10 @@ public class ResultUtils {
     {
        return new BaseResponse<T>(0,data,"ok");
     }
-
+    public static BaseResponse success()
+    {
+        return new BaseResponse(0,null,"ok");
+    }
     /**
      * 请求失败
      * @return

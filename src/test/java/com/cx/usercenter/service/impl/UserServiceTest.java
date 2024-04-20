@@ -5,6 +5,8 @@ import com.cx.usercenter.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -15,6 +17,9 @@ import java.util.List;
 public class UserServiceTest {
     @Resource
     private UserService userService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
     @Test
     public void testRegister()
     {
@@ -51,7 +56,14 @@ public class UserServiceTest {
     public void test2()
     {
         List<String> list = Arrays.asList("java", "python");
-        List<User> userByTags = userService.getUserByTags(list);
+        List<User> userByTags = userService.getTagsBySQL(list);
         Assertions.assertTrue(userByTags.size()>0);
+    }
+
+    @Test
+    public void redisTest()
+    {
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        valueOperations.set("yupii","adada");
     }
 }
